@@ -20,11 +20,11 @@ type Server struct {
 	Conf
 }
 
-type confFunc func(*Server) error
+type ConfFunc func(*Server) error
 
-// New passes a Server type to a user-supplied confFunc and returns
+// New passes a Server type to a user-supplied ConfFunc and returns
 // a ready to use http server
-func New(fn confFunc) (*Server, error) {
+func New(fn ConfFunc) (*Server, error) {
 	s := &Server{
 		Router: http.NewServeMux(),
 	}
