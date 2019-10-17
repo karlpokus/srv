@@ -1,6 +1,8 @@
 # srv
 Experimental quick setup of a http server in go with sane defaults.
 
+[![GoDoc](https://godoc.org/github.com/karlpokus/srv?status.svg)](https://godoc.org/github.com/karlpokus/srv)
+
 # features
 - read and write timeouts
 - max header size
