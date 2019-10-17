@@ -43,13 +43,14 @@ func New(fn ConfFunc) (*Server, error) {
 	return s, nil
 }
 
-// Start start a listener for interrupt the Server
+// Start runs a signal listener and starts the Server
 func (s *Server) Start() error {
 	go gracefulExit(s)
 	fmt.Printf("srv listening on %s\n", s.Server.Addr)
 	return s.ListenAndServe()
 }
 
+// gracefulExit shuts down the server gracefully on SIGINT
 func gracefulExit(s *Server) {
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt)
@@ -64,6 +65,7 @@ func gracefulExit(s *Server) {
 	fmt.Println("Shutdown complete")
 }
 
+// addrWithDefaults returns the default addr if vars are not set
 func addrWithDefaults(host, port string) string {
 	if host == "" {
 		host = "127.0.0.1"
