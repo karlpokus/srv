@@ -10,6 +10,11 @@ import (
 	"time"
 )
 
+const (
+	defaultHost = "127.0.0.1"
+	defaultPort = "9012"
+)
+
 type Conf struct {
 	Host, Port string
 }
@@ -72,10 +77,10 @@ func gracefulExit(s *Server) {
 // addrWithDefaults returns the default addr if vars are not set
 func addrWithDefaults(host, port string) string {
 	if host == "" {
-		host = "127.0.0.1"
+		host = defaultHost
 	}
 	if port == "" {
-		port = "9012"
+		port = defaultPort
 	}
 	return fmt.Sprintf("%s:%s", host, port)
 }
