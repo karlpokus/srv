@@ -20,6 +20,10 @@ type Server struct {
 	Conf
 }
 
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	s.Router.ServeHTTP(w, r)
+}
+
 type ConfFunc func(*Server) error
 
 // New passes a Server type to a user-supplied ConfFunc and returns

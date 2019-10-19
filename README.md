@@ -19,7 +19,8 @@ $ go test -v -race
 
 # todos
 - [x] use http.ServerMux as default router
-- [ ] replace fmt with buffered log
+- [ ] replace fmt with user supplied io.Writers
+- [ ] user supplied "Exiter interface" to be placed on a graceful exit queue
 
 # license
 MIT
