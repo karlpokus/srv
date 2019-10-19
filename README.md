@@ -10,7 +10,7 @@ Experimental quick setup of a http server in go with sane defaults.
 - graceful exit
 
 # usage
-See cmd/main
+See cmd/main or `*test.go` for now
 
 # tests
 ```bash

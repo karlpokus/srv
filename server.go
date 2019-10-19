@@ -16,7 +16,7 @@ type Conf struct {
 
 type Server struct {
 	*http.Server
-	Router *http.ServeMux
+	Router http.Handler
 	Conf
 }
 
