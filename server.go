@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"time"
+	"syscall"
 )
 
 const (
@@ -59,10 +60,10 @@ func (s *Server) Start() error {
 	return s.ListenAndServe()
 }
 
-// gracefulExit shuts down the server gracefully on SIGINT
+// gracefulExit shuts down the server gracefully on common interrupt signals
 func gracefulExit(s *Server) {
 	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt)
+	signal.Notify(sig, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	<-sig
 	fmt.Println("Shutdown starting..")
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
