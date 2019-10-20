@@ -28,9 +28,10 @@ func (m exiterMockTimeout) Shutdown(ctx context.Context) error {
 
 func TestGracefulExit(t *testing.T) {
 	s, _ := New(func(s *Server) error {
+		s.ExiterList = append(s.ExiterList, exiterMock{})
 		return nil
 	})
-	err := gracefulExit(gracePeriod, []Exiter{s.Server, exiterMock{}})
+	err := gracefulExit(gracePeriod, append(s.ExiterList, s.Server))
 	if err != nil {
 		t.Errorf("expected nil, got %s", err)
 	}
@@ -38,9 +39,10 @@ func TestGracefulExit(t *testing.T) {
 
 func TestGracefulExitErr(t *testing.T) {
 	s, _ := New(func(s *Server) error {
+		s.ExiterList = append(s.ExiterList, exiterMockErr{})
 		return nil
 	})
-	err := gracefulExit(gracePeriod, []Exiter{s.Server, exiterMockErr{}})
+	err := gracefulExit(gracePeriod, append(s.ExiterList, s.Server))
 	if err != ExitErr {
 		t.Errorf("expected %s, got %s", ExitErr, err)
 	}
@@ -48,10 +50,11 @@ func TestGracefulExitErr(t *testing.T) {
 
 func TestGracefulExitTimeout(t *testing.T) {
 	s, _ := New(func(s *Server) error {
+		s.ExiterList = append(s.ExiterList, exiterMockTimeout{})
 		return nil
 	})
 	var ttl int64 = 0
-	err := gracefulExit(ttl, []Exiter{s.Server, exiterMockTimeout{}})
+	err := gracefulExit(ttl, append(s.ExiterList, s.Server))
 	if err != ExitTimeout {
 		t.Errorf("expected %s, got %s", ExitTimeout, err)
 	}

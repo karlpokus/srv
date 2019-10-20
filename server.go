@@ -18,6 +18,7 @@ const (
 
 type Conf struct {
 	Host, Port string
+	ExiterList []Exiter
 }
 
 type Server struct {
@@ -76,7 +77,7 @@ func (s *Server) Start() error {
 	case err := <-errc:
 		return fmt.Errorf("Error running server: %s", err)
 	case <-sigc:
-		return gracefulExit(gracePeriod, []Exiter{s.Server}) // TODO: add user supplied Exiters
+		return gracefulExit(gracePeriod, append(s.ExiterList, s.Server))
 	}
 }
 
