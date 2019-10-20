@@ -3,6 +3,7 @@ package srv
 import (
 	"bytes"
 	"io/ioutil"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 
@@ -10,15 +11,26 @@ import (
 	"github.com/karlpokus/srv/testdata/routes"
 )
 
-func conf(s *Server) error {
-	// replace router
-	router := httprouter.New()
-	router.HandlerFunc("GET", "/greet/:user", routes.Greet)
-	s.Router = router
-	return nil
+func TestServeMux(t *testing.T) {
+	conf := func(s *Server) error {
+		router := http.NewServeMux()
+		router.Handle("/hi", routes.Hello("bob"))
+		s.Router = router
+		return nil
+	}
+	_, err := New(conf)
+	if err != nil {
+		t.Errorf("expected nil, got %s", err)
+	}
 }
 
-func TestServer(t *testing.T) {
+func TestHttpRouter(t *testing.T) {
+	conf := func(s *Server) error {
+		router := httprouter.New()
+		router.HandlerFunc("GET", "/greet/:user", routes.Greet)
+		s.Router = router
+		return nil
+	}
 	s, err := New(conf)
 	if err != nil {
 		t.Errorf("expected nil, got %s", err)

@@ -2,18 +2,18 @@
 package srv
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
-	"time"
 	"syscall"
+	"time"
 )
 
 const (
-	defaultHost = "127.0.0.1"
-	defaultPort = "9012"
+	defaultHost       = "127.0.0.1"
+	defaultPort       = "9012"
+	gracePeriod int64 = 5e9
 )
 
 type Conf struct {
@@ -35,9 +35,7 @@ type ConfFunc func(*Server) error
 // New passes a Server type to a user-supplied ConfFunc and returns
 // a ready to use http server
 func New(fn ConfFunc) (*Server, error) {
-	s := &Server{
-		Router: http.NewServeMux(),
-	}
+	s := &Server{}
 	err := fn(s)
 	if err != nil {
 		return nil, err
@@ -47,6 +45,7 @@ func New(fn ConfFunc) (*Server, error) {
 		Handler:           s.Router,
 		ReadTimeout:       5 * time.Second,
 		WriteTimeout:      5 * time.Second,
+		IdleTimeout:       5 * time.Second,
 		ReadHeaderTimeout: 5 * time.Second,
 		MaxHeaderBytes:    1 << 20, // 1 MB
 	}
@@ -55,24 +54,30 @@ func New(fn ConfFunc) (*Server, error) {
 
 // Start runs a signal listener and starts the Server
 func (s *Server) Start() error {
-	go gracefulExit(s)
-	fmt.Printf("srv listening on %s\n", s.Server.Addr)
-	return s.ListenAndServe()
-}
-
-// gracefulExit shuts down the server gracefully on common interrupt signals
-func gracefulExit(s *Server) {
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
-	<-sig
-	fmt.Println("Shutdown starting..")
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-	if err := s.Server.Shutdown(ctx); err != nil {
-		fmt.Printf("Shutdown err: %s", err)
-		return
+	fmt.Println("srv starting up")
+	errc := make(chan error)
+	go func() {
+		// return this err to caller at startup and runtime
+		// once we get an interrupt we ignore it
+		errc <-s.ListenAndServe()
+	}()
+	ttl := time.Duration(1e9)
+	// consider server start successful after ttl
+	select {
+	case err := <-errc:
+		return fmt.Errorf("Error starting server: %s", err)
+	case <-time.After(ttl):
+		fmt.Printf("srv listening on %s\n", s.Server.Addr)
 	}
-	fmt.Println("Shutdown complete")
+	sigc := make(chan os.Signal, 1)
+	signal.Notify(sigc, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	// select between server runtime err vs interrupt signal
+	select {
+	case err := <-errc:
+		return fmt.Errorf("Error running server: %s", err)
+	case <-sigc:
+		return gracefulExit(gracePeriod, []Exiter{s.Server}) // TODO: add user supplied Exiters
+	}
 }
 
 // addrWithDefaults returns the default addr if vars are not set
