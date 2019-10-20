@@ -3,6 +3,8 @@ package srv
 
 import (
 	"fmt"
+	"io"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -17,8 +19,9 @@ const (
 )
 
 type Conf struct {
-	Host, Port string
-	ExiterList []Exiter
+	Host, Port   string
+	ExiterList   []Exiter
+	StdoutWriter io.Writer
 }
 
 type Server struct {
@@ -33,6 +36,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 type ConfFunc func(*Server) error
 
+var stdout *log.Logger
+
 // New passes a Server type to a user-supplied ConfFunc and returns
 // a ready to use http server
 func New(fn ConfFunc) (*Server, error) {
@@ -41,6 +46,10 @@ func New(fn ConfFunc) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
+	if s.StdoutWriter == nil {
+		s.StdoutWriter = os.Stdout
+	}
+	stdout = log.New(s.StdoutWriter, "srv ", log.Ldate|log.Ltime)
 	s.Server = &http.Server{
 		Addr:              addrWithDefaults(s.Host, s.Port),
 		Handler:           s.Router,
@@ -50,17 +59,18 @@ func New(fn ConfFunc) (*Server, error) {
 		ReadHeaderTimeout: 5 * time.Second,
 		MaxHeaderBytes:    1 << 20, // 1 MB
 	}
+	stdout.Println("Server created")
 	return s, nil
 }
 
 // Start runs a signal listener and starts the Server
 func (s *Server) Start() error {
-	fmt.Println("srv starting up")
+	stdout.Println("Server starting")
 	errc := make(chan error)
 	go func() {
 		// return this err to caller at startup and runtime
 		// once we get an interrupt we ignore it
-		errc <-s.ListenAndServe()
+		errc <- s.ListenAndServe()
 	}()
 	ttl := time.Duration(1e9)
 	// consider server start successful after ttl
@@ -68,7 +78,7 @@ func (s *Server) Start() error {
 	case err := <-errc:
 		return fmt.Errorf("Error starting server: %s", err)
 	case <-time.After(ttl):
-		fmt.Printf("srv listening on %s\n", s.Server.Addr)
+		stdout.Printf("Server listening on %s\n", s.Server.Addr)
 	}
 	sigc := make(chan os.Signal, 1)
 	signal.Notify(sigc, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)

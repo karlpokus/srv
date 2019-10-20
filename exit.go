@@ -3,7 +3,6 @@ package srv
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 )
 
@@ -12,13 +11,13 @@ type Exiter interface {
 }
 
 var (
-	ExitErr     = errors.New("Graceful shutdown complete with errors")
+	ExitErr     = errors.New("Graceful shutdown completed with errors")
 	ExitTimeout = errors.New("Graceful shutdown timeout")
 )
 
-// gracefulExit shuts down Exiters gracefully
+// gracefulExit shuts down Exiters gracefully and returns an error if any
 func gracefulExit(graceperiod int64, queue []Exiter) error {
-	fmt.Println("Graceful shutdown start")
+	stdout.Println("Graceful shutdown start")
 	ttl := time.Duration(graceperiod)
 	ctx, cancel := context.WithTimeout(context.Background(), ttl)
 	defer cancel()
@@ -43,7 +42,7 @@ func gracefulExit(graceperiod int64, queue []Exiter) error {
 		if hasErrs(res) {
 			return ExitErr
 		}
-		fmt.Println("Graceful shutdown complete")
+		stdout.Println("Graceful shutdown complete")
 		return nil
 	case <-time.After(ttl):
 		return ExitTimeout

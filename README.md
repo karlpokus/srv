@@ -18,13 +18,13 @@ $ go test -v -race
 ```
 
 # todos
-- [x] use http.ServerMux as default router
-- [ ] replace fmt with user supplied io.Writers
+- [x] replace fmt with user supplied io.Writers
 - [x] exiter interface on a graceful exit queue
 - [x] user supplied Exiters
 - [ ] replace time lib with exponent notation
 - [ ] consider testing Start func
 - [ ] how to handle exit errs?
+- [ ] convenience funcs like Quiet, DefaultRouter
 
 # license
 MIT

@@ -16,6 +16,7 @@ func TestServeMux(t *testing.T) {
 		router := http.NewServeMux()
 		router.Handle("/hi", routes.Hello("bob"))
 		s.Router = router
+		s.StdoutWriter = ioutil.Discard
 		return nil
 	}
 	_, err := New(conf)
@@ -29,6 +30,7 @@ func TestHttpRouter(t *testing.T) {
 		router := httprouter.New()
 		router.HandlerFunc("GET", "/greet/:user", routes.Greet)
 		s.Router = router
+		s.StdoutWriter = ioutil.Discard
 		return nil
 	}
 	s, err := New(conf)

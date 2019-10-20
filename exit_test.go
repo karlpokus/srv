@@ -3,8 +3,9 @@ package srv
 import (
 	"context"
 	"fmt"
-	"time"
+	"io/ioutil"
 	"testing"
+	"time"
 )
 
 type exiterMock struct{}
@@ -29,6 +30,7 @@ func (m exiterMockTimeout) Shutdown(ctx context.Context) error {
 func TestGracefulExit(t *testing.T) {
 	s, _ := New(func(s *Server) error {
 		s.ExiterList = append(s.ExiterList, exiterMock{})
+		s.StdoutWriter = ioutil.Discard
 		return nil
 	})
 	err := gracefulExit(gracePeriod, append(s.ExiterList, s.Server))
@@ -40,6 +42,7 @@ func TestGracefulExit(t *testing.T) {
 func TestGracefulExitErr(t *testing.T) {
 	s, _ := New(func(s *Server) error {
 		s.ExiterList = append(s.ExiterList, exiterMockErr{})
+		s.StdoutWriter = ioutil.Discard
 		return nil
 	})
 	err := gracefulExit(gracePeriod, append(s.ExiterList, s.Server))
@@ -51,6 +54,7 @@ func TestGracefulExitErr(t *testing.T) {
 func TestGracefulExitTimeout(t *testing.T) {
 	s, _ := New(func(s *Server) error {
 		s.ExiterList = append(s.ExiterList, exiterMockTimeout{})
+		s.StdoutWriter = ioutil.Discard
 		return nil
 	})
 	var ttl int64 = 0
