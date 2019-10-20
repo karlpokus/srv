@@ -1,7 +1,6 @@
 package main
 
 import (
-	"net/http"
 	"log"
 
 	"github.com/karlpokus/srv"
@@ -9,7 +8,7 @@ import (
 )
 
 func conf(s *srv.Server) error {
-	router := http.NewServeMux()
+	router := s.DefaultRouter()
 	router.Handle("/hi", routes.Hello("bob"))
 	s.Router = router
 	return nil

@@ -6,7 +6,7 @@ Experimental quick setup of a http server in go with sane defaults.
 # features
 - read, write and idle timeouts
 - max header size
-- bring your own router as long as it's a `http.Handler`
+- bring your own router as long as it's a `http.Handler`. Default router is `http.ServeMux`
 - graceful exit of server and any user supplied `Exiter`s
 
 # usage
@@ -23,8 +23,10 @@ $ go test -v -race
 - [x] user supplied Exiters
 - [ ] replace time lib with exponent notation
 - [ ] consider testing Start func
-- [ ] how to handle exit errs?
-- [ ] convenience funcs like Quiet, DefaultRouter
+- [ ] how to handle exit errors?
+- [x] convenience funcs like Quiet, DefaultRouter
+- [ ] log request opt
+- [ ] optional endpoint to read ConnStates
 
 # license
 MIT

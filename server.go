@@ -4,6 +4,7 @@ package srv
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -30,8 +31,19 @@ type Server struct {
 	Conf
 }
 
+// the Server type is also a http.Handler which makes for convenient testing
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.Router.ServeHTTP(w, r)
+}
+
+// Quiet makes the server discard all of its output
+func (s *Server) Quiet() {
+	s.StdoutWriter = ioutil.Discard
+}
+
+// DefaultRouter returns a http.ServeMux
+func (s *Server) DefaultRouter() *http.ServeMux {
+	return http.NewServeMux()
 }
 
 type ConfFunc func(*Server) error
