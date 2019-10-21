@@ -92,15 +92,20 @@ func (s *Server) Start() error {
 	case <-time.After(ttl):
 		stdout.Printf("Server listening on %s\n", s.Server.Addr)
 	}
-	sigc := make(chan os.Signal, 1)
-	signal.Notify(sigc, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	// select between server runtime err vs interrupt signal
 	select {
 	case err := <-errc:
 		return fmt.Errorf("Error running server: %s", err)
-	case <-sigc:
+	case <-interrupt():
 		return gracefulExit(gracePeriod, append(s.ExiterList, s.Server))
 	}
+}
+
+// interrupt returns a chan that recieves interrupt signals
+func interrupt() <-chan os.Signal {
+	sigc := make(chan os.Signal, 1)
+	signal.Notify(sigc, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	return sigc
 }
 
 // addrWithDefaults returns the default addr if vars are not set
