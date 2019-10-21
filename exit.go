@@ -18,23 +18,21 @@ var (
 // gracefulExit shuts down Exiters gracefully and returns an error if any
 func gracefulExit(graceperiod int64, queue []Exiter) error {
 	stdout.Println("Graceful shutdown start")
-	ttl := time.Duration(graceperiod)
-	ctx, cancel := context.WithTimeout(context.Background(), ttl)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(graceperiod))
 	defer cancel()
 
 	errc := make(chan error)
-	resc := make(chan []error) // temp
+	resc := make(chan []error)
 	go func() {
-		out := make([]error, 0, len(queue))
+		out := make([]error, len(queue), len(queue))
 		for i := 0; i < len(queue); i++ {
-			//out[i] <-errc
-			out = append(out, <-errc)
+			out[i] = <-errc
 		}
 		resc <- out
 	}()
 	for _, q := range queue {
 		go func(q Exiter) {
-			errc <- q.Shutdown(ctx)
+			errc <-q.Shutdown(ctx)
 		}(q)
 	}
 	select {
@@ -44,7 +42,7 @@ func gracefulExit(graceperiod int64, queue []Exiter) error {
 		}
 		stdout.Println("Graceful shutdown complete")
 		return nil
-	case <-time.After(ttl):
+	case <-ctx.Done(): // this chan closed recieve will not block other recieves
 		return ExitTimeout
 	}
 }

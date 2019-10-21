@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"testing"
-	"time"
 )
 
 type exiterMock struct{}
@@ -22,7 +21,7 @@ func (m exiterMockErr) Shutdown(ctx context.Context) error {
 type exiterMockTimeout struct{}
 
 func (m exiterMockTimeout) Shutdown(ctx context.Context) error {
-	time.Sleep(1e9)
+	<-ctx.Done()
 	return nil
 }
 
@@ -52,7 +51,7 @@ func TestGracefulExitErr(t *testing.T) {
 
 func TestGracefulExitTimeout(t *testing.T) {
 	s, _ := New(func(s *Server) error {
-		s.ExiterList = append(s.ExiterList, exiterMockTimeout{})
+		s.ExiterList = append(s.ExiterList, exiterMockTimeout{}, exiterMockTimeout{})
 		s.Quiet()
 		return nil
 	})
