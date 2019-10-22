@@ -27,6 +27,8 @@ $ go test -v -race
 - [x] convenience funcs like Quiet, DefaultRouter
 - [ ] log request opt
 - [ ] optional endpoint to read ConnStates
+- [x] expose Graceperiod
+- [ ] use routest when v2 has been fixed
 
 # license
 MIT

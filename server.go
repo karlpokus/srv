@@ -14,15 +14,18 @@ import (
 )
 
 const (
-	defaultHost       = "127.0.0.1"
-	defaultPort       = "9012"
-	gracePeriod int64 = 5e9
+	defaultHost         = "127.0.0.1"
+	defaultPort         = "9012"
+	defaultGracePeriod  = "5s"
 )
+
+var defaultStdoutWriter = os.Stdout
 
 type Conf struct {
 	Host, Port   string
 	ExiterList   []Exiter
 	StdoutWriter io.Writer
+	GracePeriod  string
 }
 
 type Server struct {
@@ -50,8 +53,8 @@ type ConfFunc func(*Server) error
 
 var stdout *log.Logger
 
-// New passes a Server type to a user-supplied ConfFunc and returns
-// a ready to use http server
+// New runs the ConfFunc, set some defaults and returns a
+// ready to use http server
 func New(fn ConfFunc) (*Server, error) {
 	s := &Server{}
 	err := fn(s)
@@ -59,7 +62,10 @@ func New(fn ConfFunc) (*Server, error) {
 		return nil, err
 	}
 	if s.StdoutWriter == nil {
-		s.StdoutWriter = os.Stdout
+		s.StdoutWriter = defaultStdoutWriter
+	}
+	if s.GracePeriod == "" {
+		s.GracePeriod = defaultGracePeriod
 	}
 	stdout = log.New(s.StdoutWriter, "srv ", log.Ldate|log.Ltime)
 	s.Server = &http.Server{
@@ -97,7 +103,7 @@ func (s *Server) Start() error {
 	case err := <-errc:
 		return fmt.Errorf("Error running server: %s", err)
 	case <-interrupt():
-		return gracefulExit(gracePeriod, append(s.ExiterList, s.Server))
+		return gracefulExit(s.GracePeriod, append(s.ExiterList, s.Server))
 	}
 }
 

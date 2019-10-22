@@ -31,7 +31,7 @@ func TestGracefulExit(t *testing.T) {
 		s.Quiet()
 		return nil
 	})
-	err := gracefulExit(gracePeriod, append(s.ExiterList, s.Server))
+	err := gracefulExit(s.GracePeriod, append(s.ExiterList, s.Server))
 	if err != nil {
 		t.Errorf("expected nil, got %s", err)
 	}
@@ -43,7 +43,7 @@ func TestGracefulExitErr(t *testing.T) {
 		s.Quiet()
 		return nil
 	})
-	err := gracefulExit(gracePeriod, append(s.ExiterList, s.Server))
+	err := gracefulExit(s.GracePeriod, append(s.ExiterList, s.Server))
 	if err != ExitErr {
 		t.Errorf("expected %s, got %s", ExitErr, err)
 	}
@@ -52,11 +52,11 @@ func TestGracefulExitErr(t *testing.T) {
 func TestGracefulExitTimeout(t *testing.T) {
 	s, _ := New(func(s *Server) error {
 		s.ExiterList = append(s.ExiterList, exiterMockTimeout{}, exiterMockTimeout{})
+		s.GracePeriod = "0"
 		s.Quiet()
 		return nil
 	})
-	var ttl int64 = 0
-	err := gracefulExit(ttl, append(s.ExiterList, s.Server))
+	err := gracefulExit(s.GracePeriod, append(s.ExiterList, s.Server))
 	if err != ExitTimeout {
 		t.Errorf("expected %s, got %s", ExitTimeout, err)
 	}

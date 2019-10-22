@@ -3,6 +3,7 @@ package srv
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 )
 
@@ -11,14 +12,19 @@ type Exiter interface {
 }
 
 var (
-	ExitErr     = errors.New("Graceful shutdown completed with errors")
-	ExitTimeout = errors.New("Graceful shutdown timeout")
+	ExitErr             = errors.New("Graceful shutdown completed with errors")
+	ExitTimeout         = errors.New("Graceful shutdown timeout")
+	GracePeriodParseErr = errors.New("Graceful shutdown aborted. Unable to parse GracePeriod")
 )
 
 // gracefulExit shuts down Exiters gracefully and returns an error if any
-func gracefulExit(graceperiod int64, queue []Exiter) error {
+func gracefulExit(gracePeriod string, queue []Exiter) error {
 	stdout.Println("Graceful shutdown start")
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(graceperiod))
+	d, err := time.ParseDuration(gracePeriod)
+	if err != nil {
+		return fmt.Errorf("%s %s", GracePeriodParseErr, err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), d)
 	defer cancel()
 
 	errc := make(chan error)
@@ -32,7 +38,7 @@ func gracefulExit(graceperiod int64, queue []Exiter) error {
 	}()
 	for _, q := range queue {
 		go func(q Exiter) {
-			errc <-q.Shutdown(ctx)
+			errc <- q.Shutdown(ctx)
 		}(q)
 	}
 	select {
