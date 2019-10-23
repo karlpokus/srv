@@ -28,7 +28,7 @@ $ go test -v -race
 - [ ] log request opt
 - [ ] optional endpoint to read ConnStates
 - [x] expose Graceperiod
-- [ ] use routest when v2 has been fixed
+- [x] use routest when v2 has been fixed
 
 # license
 MIT

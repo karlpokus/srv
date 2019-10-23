@@ -1,2 +1,5 @@
 github.com/julienschmidt/httprouter v1.3.0 h1:U0609e9tgbseu3rBINet9P48AI/D3oJs4dN7jwJOQ1U=
 github.com/julienschmidt/httprouter v1.3.0/go.mod h1:JR6WtHb+2LUe8TCKY3cZOxFyyO8IZAc4RVcycCCAKdM=
+github.com/karlpokus/routest/v2 v2.0.0 h1:nP1fePO/ramxHUG80PaM/q7ZgDVwEjKh4xQuhG5bHNM=
+github.com/karlpokus/routest/v2 v2.0.0/go.mod h1:gmYSDt1bDf/4SMG9GGTZDe65H/0MVPkvj7Fhw6neRUo=
+github.com/karlpokus/srv v0.3.1/go.mod h1:/vf/MnAOC6iHrQbEWML0NqE8N6WtPB+kAgpoaUKr+Mk=
