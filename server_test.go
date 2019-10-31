@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/karlpokus/srv/testdata/routes"
 	"github.com/karlpokus/routest/v2"
+	"github.com/karlpokus/srv/testdata/routes"
 )
 
 func TestDefaultRouter(t *testing.T) {
@@ -15,7 +15,6 @@ func TestDefaultRouter(t *testing.T) {
 			router := s.DefaultRouter()
 			router.Handle("/hi", routes.Hello("bob"))
 			s.Router = router
-			s.Quiet()
 			return nil
 		})
 		if err != nil {
@@ -41,7 +40,6 @@ func TestCustomRouter(t *testing.T) {
 			router := httprouter.New()
 			router.HandlerFunc("GET", "/greet/:user", routes.Greet)
 			s.Router = router
-			s.Quiet()
 			return nil
 		})
 		if err != nil {

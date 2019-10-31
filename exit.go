@@ -19,7 +19,7 @@ var (
 
 // gracefulExit shuts down Exiters gracefully and returns an error if any
 func gracefulExit(gracePeriod string, queue []Exiter) error {
-	stdout.Println("Graceful shutdown start")
+	logger.Println("Graceful shutdown start")
 	d, err := time.ParseDuration(gracePeriod)
 	if err != nil {
 		return fmt.Errorf("%s %s", GracePeriodParseErr, err)
@@ -46,7 +46,7 @@ func gracefulExit(gracePeriod string, queue []Exiter) error {
 		if hasErrs(res) {
 			return ExitErr
 		}
-		stdout.Println("Graceful shutdown complete")
+		logger.Println("Graceful shutdown complete")
 		return nil
 	case <-ctx.Done(): // this chan closed recieve will not block other recieves
 		return ExitTimeout

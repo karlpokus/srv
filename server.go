@@ -3,7 +3,6 @@ package srv
 
 import (
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -14,18 +13,16 @@ import (
 )
 
 const (
-	defaultHost         = "127.0.0.1"
-	defaultPort         = "9012"
-	defaultGracePeriod  = "5s"
+	defaultHost        = "127.0.0.1"
+	defaultPort        = "9012"
+	defaultGracePeriod = "5s"
 )
 
-var defaultStdoutWriter = os.Stdout
-
 type Conf struct {
-	Host, Port   string
-	ExiterList   []Exiter
-	StdoutWriter io.Writer
-	GracePeriod  string
+	Host, Port  string
+	ExiterList  []Exiter
+	GracePeriod string
+	Logger      *log.Logger
 }
 
 type Server struct {
@@ -39,11 +36,6 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.Router.ServeHTTP(w, r)
 }
 
-// Quiet makes the server discard all of its output
-func (s *Server) Quiet() {
-	s.StdoutWriter = ioutil.Discard
-}
-
 // DefaultRouter returns a http.ServeMux
 func (s *Server) DefaultRouter() *http.ServeMux {
 	return http.NewServeMux()
@@ -51,7 +43,7 @@ func (s *Server) DefaultRouter() *http.ServeMux {
 
 type ConfFunc func(*Server) error
 
-var stdout *log.Logger
+var logger = log.New(ioutil.Discard, "", 0)
 
 // New runs the ConfFunc, set some defaults and returns a
 // ready to use http server
@@ -61,13 +53,12 @@ func New(fn ConfFunc) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	if s.StdoutWriter == nil {
-		s.StdoutWriter = defaultStdoutWriter
+	if s.Logger != nil {
+		logger = s.Logger
 	}
 	if s.GracePeriod == "" {
 		s.GracePeriod = defaultGracePeriod
 	}
-	stdout = log.New(s.StdoutWriter, "srv ", log.Ldate|log.Ltime)
 	s.Server = &http.Server{
 		Addr:              addrWithDefaults(s.Host, s.Port),
 		Handler:           s.Router,
@@ -77,13 +68,13 @@ func New(fn ConfFunc) (*Server, error) {
 		ReadHeaderTimeout: 5 * time.Second,
 		MaxHeaderBytes:    1 << 20, // 1 MB
 	}
-	stdout.Println("Server created")
+	logger.Println("Server created")
 	return s, nil
 }
 
 // Start runs a signal listener and starts the Server
 func (s *Server) Start() error {
-	stdout.Println("Server starting")
+	logger.Println("Server starting")
 	errc := make(chan error)
 	go func() {
 		// return this err to caller at startup and runtime
@@ -96,7 +87,7 @@ func (s *Server) Start() error {
 	case err := <-errc:
 		return fmt.Errorf("Error starting server: %s", err)
 	case <-time.After(ttl):
-		stdout.Printf("Server listening on %s\n", s.Server.Addr)
+		logger.Printf("Server listening on %s\n", s.Server.Addr)
 	}
 	// select between server runtime err vs interrupt signal
 	select {

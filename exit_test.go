@@ -28,7 +28,6 @@ func (m exiterMockTimeout) Shutdown(ctx context.Context) error {
 func TestGracefulExit(t *testing.T) {
 	s, _ := New(func(s *Server) error {
 		s.ExiterList = append(s.ExiterList, exiterMock{})
-		s.Quiet()
 		return nil
 	})
 	err := gracefulExit(s.GracePeriod, append(s.ExiterList, s.Server))
@@ -40,7 +39,6 @@ func TestGracefulExit(t *testing.T) {
 func TestGracefulExitErr(t *testing.T) {
 	s, _ := New(func(s *Server) error {
 		s.ExiterList = append(s.ExiterList, exiterMockErr{})
-		s.Quiet()
 		return nil
 	})
 	err := gracefulExit(s.GracePeriod, append(s.ExiterList, s.Server))
@@ -53,7 +51,6 @@ func TestGracefulExitTimeout(t *testing.T) {
 	s, _ := New(func(s *Server) error {
 		s.ExiterList = append(s.ExiterList, exiterMockTimeout{}, exiterMockTimeout{})
 		s.GracePeriod = "0"
-		s.Quiet()
 		return nil
 	})
 	err := gracefulExit(s.GracePeriod, append(s.ExiterList, s.Server))
