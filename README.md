@@ -66,11 +66,11 @@ $ go test -v -race
 - [x] replace fmt with user supplied io.Writers
 - [x] exiter interface on a graceful exit queue
 - [x] user supplied Exiters
-- [ ] replace time lib with exponent notation
 - [ ] consider testing Start func
 - [ ] how to handle exit errors?
 - [x] convenience funcs like Quiet, DefaultRouter
 - [ ] log request opt
+- [ ] rate limit opt
 - [ ] optional endpoint to read ConnStates
 - [x] expose Graceperiod
 - [x] use routest when v2 has been fixed
